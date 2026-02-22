@@ -6,7 +6,7 @@ Here is a clean and informative **README.md** file for your Student Registration
 
 A clean, modern, single-page **Student Registration Dashboard** with role-based access (Student & Admin), dark/light theme support, form validation, localStorage persistence, and CSV export functionality.
 
-Built with **HTML + CSS + Vanilla JavaScript** — no frameworks or backend required.
+Built with **HTML** — no frameworks or backend required.
 
 
 
