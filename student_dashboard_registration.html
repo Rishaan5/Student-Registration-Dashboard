@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Registration Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --success: #10b981;
+      --danger: #ef4444;
+      --light-bg: #f8fafc;
+      --light-card: white;
+      --light-text: #1e293b;
+      --light-gray: #64748b;
+      --dark-bg: #0f172a;
+      --dark-card: #1e293b;
+      --dark-text: #e2e8f0;
+      --dark-gray: #94a3b8;
+    }
+
+    body.light { --bg: var(--light-bg); --card: var(--light-card); --text: var(--light-text); --gray: var(--light-gray); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: var(--text); }
+    body.dark  { --bg: var(--dark-bg);  --card: var(--dark-card);  --text: var(--dark-text);  --gray: var(--dark-gray);  background: #0f172a; color: var(--text); }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px 15px 80px; transition: all 0.4s; }
+
+    .container { max-width: 1100px; margin: 0 auto; display: none; }
+    header { text-align: center; color: white; margin-bottom: 2rem; }
+    header h1 { font-size: 2.5rem; text-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .controls { display: flex; gap: 1rem; }
+
+    .theme-toggle, .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(255,255,255,0.15);
+      padding: 10px 16px;
+      border-radius: 50px;
+      color: white;
+      cursor: pointer;
+      border: none;
+      font-size: 0.95rem;
+    }
+    .logout-btn { background: rgba(239,68,68,0.25); }
+    .logout-btn:hover { background: var(--danger); }
+
+    .content { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .content { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    .card:hover { transform: translateY(-6px); }
+    .card.square { aspect-ratio: 1; }
+
+    .card-header {
+      background: var(--primary);
+      color: white;
+      padding: 16px 20px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-container, .table-container { padding: 20px; }
+
+    .success-msg {
+      background: var(--success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      display: none;
+    }
+
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--gray); }
+
+    input, select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: var(--card);
+      color: var(--text);
+    }
+    .dark input, .dark select { border-color: #475569; background: #334155; }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+    }
+
+    .error { color: var(--danger); font-size: 0.85rem; margin-top: 5px; display: none; }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 11px 22px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    button:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+    #resetBtn { background: var(--gray); }
+    #exportBtn { background: #8b5cf6; margin-left: auto; font-size: 0.92rem; padding: 8px 14px; }
+
+    .table-container {
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    table {
+      width: 100%;
+      min-width: 800px;
+      table-layout: auto;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+    }
+
+    th:nth-child(1), td:nth-child(1) { width: 28%; }
+    th:nth-child(2), td:nth-child(2) { width: 18%; }
+    th:nth-child(3), td:nth-child(3) { width: 14%; }
+    th:nth-child(4), td:nth-child(4) { width: 10%; }
+    th:nth-child(5), td:nth-child(5) { width: 30%; }
+    th:nth-child(6), td:nth-child(6) { width: 0%; min-width: 180px; }
+
+    th { background: var(--primary); color: white; font-weight: 600; }
+    tr { background: rgba(248,250,252,0.7); transition: all 0.2s; }
+    .dark tr { background: rgba(30,41,59,0.6); }
+    tr:hover { background: rgba(241,245,249,0.9); transform: scale(1.005); }
+    .dark tr:hover { background: #475569; }
+
+    .action-btn {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      border: none;
+    }
+    .view-btn   { background: #3b82f6; }
+    .delete-btn { background: var(--danger); }
+
+    .empty-message { text-align: center; color: var(--gray); padding: 50px 20px; font-size: 1.15rem; }
+
+    #entryModal, #adminLoginModal, #contactModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: white;
+      padding: 2.5rem 2rem;
+      border-radius: 16px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+    .role-buttons {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+    .role-btn {
+      padding: 16px 32px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      transition: all 0.2s;
+    }
+    .role-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+    .close-btn { float: right; font-size: 1.8rem; cursor: pointer; color: #64748b; }
+
+    footer { 
+      position: fixed; 
+      bottom: 0; 
+      left: 0; 
+      right: 0; 
+      text-align: center; 
+      padding: 20px 15px; 
+      background: rgba(0,0,0,0.8); 
+      color: white; 
+      z-index: 10; 
+    }
+    footer a { color: white; text-decoration: underline; }
+  </style>
+</head>
+<body class="light">
+
+  <!-- Entry Modal -->
+  <div id="entryModal">
+    <div class="modal-box">
+      <h2>Welcome to Student Dashboard</h2>
+      <p style="margin: 1.5rem 0; color: #64748b;">Please select your role</p>
+      <div class="role-buttons">
+        <button class="role-btn" id="studentEntryBtn">Student</button>
+        <button class="role-btn" id="adminEntryBtn">Admin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div id="adminLoginModal" style="display:none;">
+    <div class="modal-box">
+      <span class="close-btn" id="closeAdminLogin">×</span>
+      <h2><i class="fas fa-user-shield"></i> Admin Login</h2>
+      <div class="form-group" style="margin: 1.5rem 0;">
+        <label for="adminUsername">Username</label>
+        <input type="text" id="adminUsername" placeholder="admin" required/>
+      </div>
+      <div class="form-group">
+        <label for="adminPassword">Password</label>
+        <input type="password" id="adminPassword" placeholder="Enter password" required/>
+      </div>
+      <button id="adminLoginBtn" style="width:100%; margin-top:1.5rem; padding:14px;">Login as Admin</button>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div id="mainApp" class="container">
+
+    <header>
+      <h1>Student Registration Dashboard</h1>
+    </header>
+
+    <div class="top-bar">
+      <div>
+        <span style="color:white; font-weight:500;">Mode: <strong id="currentMode">Student</strong></span>
+      </div>
+      <div class="controls">
+        <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i> Dark Mode</button>
+        <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+
+    <div id="successMessage" class="success-msg">Registration Successful!</div>
+
+    <div class="content">
+
+      <div class="card" id="formCard">
+        <div class="card-header"><i class="fas fa-user-plus"></i> <span id="formTitle">Register Yourself</span></div>
+        <div class="form-container">
+          <form id="studentForm">
+            <div class="form-group">
+              <label for="name">Full Name *</label>
+              <input type="text" id="name" name="name" required/>
+              <div class="error" id="nameError">Name required (min 3 chars)</div>
+            </div>
+            <div class="form-group">
+              <label for="roll">Roll Number *</label>
+              <input type="text" id="roll" name="roll" required/>
+              <div class="error" id="rollError">Roll number required</div>
+            </div>
+            <div class="form-group">
+              <label for="branch">Branch *</label>
+              <select id="branch" name="branch" required>
+                <option value="">Select Branch</option>
+                <option value="CSE">Computer Science</option>
+                <option value="ECE">Electronics & Communication</option>
+                <option value="MECH">Mechanical</option>
+                <option value="CIVIL">Civil</option>
+                <option value="EEE">Electrical</option>
+                <option value="IT">Information Technology</option>
+              </select>
+              <div class="error" id="branchError">Select branch</div>
+            </div>
+            <div class="form-group">
+              <label for="year">Year *</label>
+              <select id="year" name="year" required>
+                <option value="">Select Year</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+              </select>
+              <div class="error" id="yearError">Select year</div>
+            </div>
+            <div class="form-group" id="emailGroup">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" required/>
+              <div class="error" id="emailError">Valid email required</div>
+            </div>
+            <div class="error" id="duplicateError" style="display:none;">Email already exists.</div>
+            <div style="margin-top: 1.8rem;">
+              <button type="submit" id="submitBtn">Register</button>
+              <button type="button" id="resetBtn">Reset</button>
+              <button type="button" id="clearAllBtn" style="background:#dc2626; margin-left:10px; display:none;">Clear All Data</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card" id="tableCard">
+        <div class="card-header">
+          <i class="fas fa-list"></i> Registered Students
+          <div style="display: flex; gap: 10px;">
+            <button id="addStudentBtn" style="display:none; font-size:0.92rem; padding:8px 14px;">Add Student</button>
+            <button id="exportBtn" style="display:none; font-size:0.92rem; padding:8px 14px;">
+              <i class="fas fa-download"></i> Export CSV
+            </button>
+          </div>
+        </div>
+        <div class="table-container">
+          <table id="studentTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Roll No</th>
+                <th>Branch</th>
+                <th>Year</th>
+                <th>Email</th>
+                <th id="actionHeader" style="display:none;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentBody"></tbody>
+          </table>
+          <div id="emptyMsg" class="empty-message">No students registered yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 Student Registration • 
+      <a href="#" id="contactLink">Contact Us</a>
+    </p>
+  </footer>
+
+  <!-- Contact Modal -->
+  <div id="contactModal" style="display:none;">
+    <div class="modal-box">
+      <span class="close-btn" id="closeContact">×</span>
+      <h2><i class="fas fa-envelope"></i> Contact Us</h2>
+      <p style="margin:1.5rem 0; line-height:1.6;">
+        Have questions or feedback?<br>Please reach out:
+      </p>
+      <ul style="list-style:none; line-height:2;">
+        <li><strong>Email:</strong> support@dashboard.edu</li>
+        <li><strong>Phone:</strong> +91 98765 43210</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // ────────────────────────────────────────────────
+    // State
+    // ────────────────────────────────────────────────
+    let students = JSON.parse(localStorage.getItem('students')) || [];
+    let currentUser = localStorage.getItem('currentUser') || null;
+
+    const ADMIN_USERNAME = "admin";
+    const ADMIN_PASSWORD = "admin2026";
+
+    const form = document.getElementById('studentForm');
+    const successMsg = document.getElementById('successMessage');
+    const tableBody = document.getElementById('studentBody');
+    const emptyMsg = document.getElementById('emptyMsg');
+    const submitBtn = document.getElementById('submitBtn');
+    const formTitle = document.getElementById('formTitle');
+    const actionHeader = document.getElementById('actionHeader');
+    const exportBtn = document.getElementById('exportBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    let editId = null;
+
+    // ────────────────────────────────────────────────
+    // Theme
+    // ────────────────────────────────────────────────
+    function setTheme(theme) {
+      document.body.className = theme;
+      localStorage.setItem('theme', theme);
+      document.getElementById('themeToggle').innerHTML = 
+        theme === 'dark' ? '<i class="fas fa-sun"></i> Light Mode' : '<i class="fas fa-moon"></i> Dark Mode';
+    }
+
+    document.getElementById('themeToggle').onclick = () => {
+      setTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
+    };
+    setTheme(localStorage.getItem('theme') || 'light');
+
+    // ────────────────────────────────────────────────
+    // Role & Login / Logout
+    // ────────────────────────────────────────────────
+    const entryModal = document.getElementById('entryModal');
+    const adminLoginModal = document.getElementById('adminLoginModal');
+    const mainApp = document.getElementById('mainApp');
+
+    function showMainApp() {
+      entryModal.style.display = 'none';
+      mainApp.style.display = 'block';
+      updateUI();
+      renderTable();
+    }
+
+    // Student entry
+    document.getElementById('studentEntryBtn').onclick = () => {
+      currentUser = 'student';
+      localStorage.setItem('currentUser', 'student');
+      showMainApp();
+    };
+
+    // Admin entry → show login
+    document.getElementById('adminEntryBtn').onclick = () => {
+      entryModal.style.display = 'none';
+      adminLoginModal.style.display = 'flex';
+    };
+
+    // Close admin login → back to role selection
+    document.getElementById('closeAdminLogin').onclick = () => {
+      adminLoginModal.style.display = 'none';
+      entryModal.style.display = 'flex';
+    };
+
+    // Admin login
+    document.getElementById('adminLoginBtn').onclick = () => {
+      const u = document.getElementById('adminUsername').value.trim();
+      const p = document.getElementById('adminPassword').value.trim();
+
+      if (u === ADMIN_USERNAME && p === ADMIN_PASSWORD) {
+        currentUser = 'admin';
+        localStorage.setItem('currentUser', 'admin');
+        adminLoginModal.style.display = 'none';
+        showSuccess('Welcome Admin! You now have full access.');
+        showMainApp();
+      } else {
+        alert('Incorrect username or password');
+        document.getElementById('adminPassword').focus();
+      }
+    };
+
+    // Logout – properly return to role selection
+    document.getElementById('logoutBtn').onclick = () => {
+      if (!confirm('Logout and return to role selection?')) return;
+
+      localStorage.removeItem('currentUser');
+      currentUser = null;
+      mainApp.style.display = 'none';
+      entryModal.style.display = 'flex';
+      
+      // Optional: reset form state
+      form.reset();
+      editId = null;
+      submitBtn.textContent = 'Register';
+      showSuccess('Logged out successfully');
+    };
+
+    // Auto-login if previously logged in (admin only)
+    if (localStorage.getItem('currentUser') === 'admin') {
+      currentUser = 'admin';
+      showMainApp();
+    } else if (localStorage.getItem('currentUser') === 'student') {
+      currentUser = 'student';
+      showMainApp();
+    } else {
+      // Show role selection by default
+      entryModal.style.display = 'flex';
+    }
+
+    function updateUI() {
+      const isAdmin = currentUser === 'admin';
+      const formCard = document.getElementById('formCard');
+      const tableCard = document.getElementById('tableCard');
+      const addStudentBtn = document.getElementById('addStudentBtn');
+      const content = document.querySelector('.content');
+
+      if (currentUser === 'student') {
+        formCard.style.display = 'block';
+        formCard.style.maxWidth = '500px';
+        tableCard.style.display = 'none';
+        addStudentBtn.style.display = 'none';
+        content.style.display = 'flex';
+        content.style.justifyContent = 'center';
+        content.style.alignItems = 'start';
+      } else if (currentUser === 'admin') {
+        formCard.style.display = 'none';
+        tableCard.style.display = 'block';
+        tableCard.style.maxWidth = '1100px';
+        addStudentBtn.style.display = 'inline-flex';
+        content.style.display = 'flex';
+        content.style.justifyContent = 'center';
+        content.style.alignItems = 'start';
+      }
+
+      formTitle.textContent = isAdmin ? 'Manage Students' : 'Register Yourself';
+      actionHeader.style.display = isAdmin ? '' : 'none';
+      exportBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+      clearAllBtn.style.display = 'none'; // Hide clear data button for both roles
+      document.getElementById('currentMode').textContent = isAdmin ? 'Admin' : 'Student';
+    }
+
+    // ────────────────────────────────────────────────
+    // Helpers
+    // ────────────────────────────────────────────────
+    function showSuccess(msg) {
+      successMsg.textContent = msg;
+      successMsg.style.display = 'block';
+      setTimeout(() => successMsg.style.display = 'none', 3200);
+    }
+
+    function saveStudents() {
+      localStorage.setItem('students', JSON.stringify(students));
+    }
+
+    function renderTable() {
+      tableBody.innerHTML = '';
+      if (students.length === 0) {
+        emptyMsg.style.display = 'block';
+        return;
+      }
+      emptyMsg.style.display = 'none';
+
+      const isAdmin = currentUser === 'admin';
+
+      students.forEach((s, i) => {
+        const row = document.createElement('tr');
+        let actions = '';
+        if (isAdmin) {
+          actions = `
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <button class="action-btn" style="background: #f59e0b;" onclick="editStudent(${i})">Edit</button>
+                <button class="action-btn delete-btn" onclick="deleteStudent(${i})">Delete</button>
+              </div>
+            </td>
+          `;
+        }
+
+        row.innerHTML = `
+          <td>${s.name || '-'}</td>
+          <td>${s.roll || '-'}</td>
+          <td>${s.branch || '-'}</td>
+          <td>${s.year || '-'}</td>
+          <td>${s.email || '-'}</td>
+          ${actions || '<td></td>'}
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // ────────────────────────────────────────────────
+    // Form Actions
+    // ────────────────────────────────────────────────
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+
+      if (currentUser === 'student' || editId !== null) {
+        // Allow students to register or admins to edit
+      } else {
+        return;
+      }
+
+      let valid = true;
+      document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+
+      const name  = document.getElementById('name').value.trim();
+      const roll  = document.getElementById('roll').value.trim();
+      const branch = document.getElementById('branch').value;
+      const year  = document.getElementById('year').value;
+      const email = document.getElementById('email').value.trim();
+
+      if (name.length < 3) { document.getElementById('nameError').style.display = 'block'; valid = false; }
+      if (!roll) { document.getElementById('rollError').style.display = 'block'; valid = false; }
+      if (!branch) { document.getElementById('branchError').style.display = 'block'; valid = false; }
+      if (!year) { document.getElementById('yearError').style.display = 'block'; valid = false; }
+      if (editId === null && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('emailError').style.display = 'block'; valid = false; }
+
+      if (!valid) return;
+
+      // Check for duplicates
+      const duplicate = students.find((s, i) => {
+        if (editId !== null && i === editId) return false; // Skip self when editing
+        return s.roll === roll || s.email === email;
+      });
+      if (duplicate) {
+        document.getElementById('duplicateError').style.display = 'block';
+        return;
+      }
+
+      if (editId !== null) {
+        // Update existing student
+        students[editId] = { name, roll, branch, year, email: students[editId].email };
+        showSuccess('Student Updated Successfully!');
+        editId = null;
+        document.getElementById('formCard').style.display = 'none';
+        document.getElementById('tableCard').style.display = 'block';
+        updateUI();
+      } else {
+        // Add new student
+        const newStudent = { name, roll, branch, year, email };
+        students.push(newStudent);
+        showSuccess('Registration Successful!');
+      }
+      saveStudents();
+      renderTable();
+      form.reset();
+    });
+
+    window.viewStudent = i => {
+      const s = students[i];
+      alert(
+        `Full Student Details:\n\n` +
+        `Name:  ${s.name}\n` +
+        `Roll Number:  ${s.roll}\n` +
+        `Branch: ${s.branch}\n` +
+        `Year:  ${s.year}\n` +
+        `Email: ${s.email}`
+      );
+    };
+
+    window.editStudent = i => {
+      if (currentUser !== 'admin') return;
+      const s = students[i];
+      editId = i;
+      document.getElementById('name').value = s.name;
+      document.getElementById('roll').value = s.roll;
+      document.getElementById('branch').value = s.branch;
+      document.getElementById('year').value = s.year;
+      document.getElementById('email').value = s.email;
+      document.getElementById('emailGroup').style.display = 'none';
+      submitBtn.textContent = 'Update';
+      formTitle.textContent = 'Edit Student';
+      document.getElementById('formCard').style.display = 'block';
+      document.getElementById('tableCard').style.display = 'none';
+    };
+
+    window.deleteStudent = i => {
+      if (currentUser !== 'admin') return;
+      if (confirm('Delete this student record?')) {
+        students.splice(i, 1);
+        saveStudents();
+        renderTable();
+      }
+    };
+
+    document.getElementById('resetBtn').onclick = () => {
+      form.reset();
+      if (editId !== null) {
+        editId = null;
+        document.getElementById('emailGroup').style.display = 'block';
+        submitBtn.textContent = 'Register';
+        formTitle.textContent = currentUser === 'admin' ? 'Manage Students' : 'Register Yourself';
+        document.getElementById('formCard').style.display = currentUser === 'admin' ? 'none' : 'block';
+        document.getElementById('tableCard').style.display = currentUser === 'admin' ? 'block' : 'none';
+      } else {
+        submitBtn.textContent = 'Register';
+      }
+    };
+
+    document.getElementById('clearAllBtn').onclick = () => {
+      if (currentUser !== 'admin') return;
+      if (confirm('Delete ALL student records? This cannot be undone.')) {
+        students = [];
+        localStorage.removeItem('students');
+        renderTable();
+        showSuccess('All student records cleared');
+      }
+    };
+
+    document.getElementById('exportBtn').onclick = () => {
+      if (currentUser !== 'admin' || students.length === 0) return alert('No data or insufficient permissions');
+
+      const headers = ['Name','Roll Number','Branch','Year','Email'];
+      const rows = students.map(s => [
+        `"${s.name.replace(/"/g,'""')}"`,
+        `"${s.roll}"`,
+        s.branch,
+        s.year,
+        `"${s.email}"`
+      ].join(','));
+
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], {type: 'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `students_export_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    document.getElementById('addStudentBtn').onclick = () => {
+      if (currentUser !== 'admin') return;
+      const name = prompt('Enter Full Name:');
+      if (name === null || name.trim().length < 3) return alert('Name must be at least 3 characters');
+      const roll = prompt('Enter Roll Number:');
+      if (roll === null || !roll.trim()) return alert('Roll number is required');
+      const branch = prompt('Enter Branch (e.g., CSE, ECE):');
+      if (branch === null || !branch.trim()) return alert('Branch is required');
+      const year = prompt('Enter Year (1-4):');
+      if (year === null || !['1','2','3','4'].includes(year.trim())) return alert('Year must be 1, 2, 3, or 4');
+      const email = prompt('Enter Email:');
+      if (email === null || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return alert('Valid email is required');
+
+      students.push({ name: name.trim(), roll: roll.trim(), branch: branch.trim(), year: year.trim(), email: email.trim() });
+      saveStudents();
+      renderTable();
+      showSuccess('Student Added Successfully!');
+    };
+
+    // Contact Modal
+    document.getElementById('contactLink').onclick = e => {
+      e.preventDefault();
+      document.getElementById('contactModal').style.display = 'flex';
+    };
+    document.getElementById('closeContact').onclick = () => {
+      document.getElementById('contactModal').style.display = 'none';
+    };
+    document.getElementById('contactModal').onclick = e => {
+      if (e.target === e.currentTarget) e.currentTarget.style.display = 'none';
+    };
+
+    // Initial render (if already logged in)
+    renderTable();
+  </script>
+</body>
+</html>
