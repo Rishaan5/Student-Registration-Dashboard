@@ -18,8 +18,9 @@ Features
 📱 Responsive design (mobile-friendly layout)
 🎨 Modern card-based UI with smooth animations & hover effects
 ℹ️ Contact modal & footer
+
 How to Use
-Open student_registration_dashboard.html (or whatever you named the file) in any modern browser
+Open index.html (or whatever you named the file) in any modern browser
 Choose your role:
 Student → fill the registration form
 Admin → login with:
@@ -32,6 +33,7 @@ Edit student details
 Delete records
 Export data as CSV
 Add new students manually
+
 Tech Stack
 HTML5
 CSS3 (custom variables + modern layout techniques)
@@ -46,11 +48,6 @@ Admin:
   Password : admin2026
 Important: This is a frontend-only demo. Credentials are hardcoded in JavaScript — do not use in production.
 
-Project Structure
-student-dashboard/
-├── sdb.html          ← main file (rename if needed)
-├── README.md         ← this file
-└── (no other files — everything is inline)
 Future Improvements (Ideas)
 Add search/filter in admin table
 Input for profile picture upload (base64 in localStorage)
@@ -59,15 +56,7 @@ Pagination for large student lists
 Print/student ID card generation
 Import students from CSV
 Move admin credentials to a more secure pattern (even for demo)
-License
-MIT License
 
-Feel free to use, modify, and share.
-Created with ❤️ in 2026.
 
-Made as a learning / portfolio project
-Last updated: February 2026 ```
-
-Happy coding!
 
 This site is open source. Improve this page.
